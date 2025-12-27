@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.core.middleware import LoggingMiddleware
 from app.models.gateway_schemas import StateRequest, StateResponse
 from app.services.gateway import ExternalAPIClient
 
@@ -20,9 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add logging middleware
-app.add_middleware(LoggingMiddleware)
 
 # Initialize external API client for aggregation
 api_client = ExternalAPIClient(timeout=10.0)
