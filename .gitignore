@@ -67,3 +67,5 @@ Thumbs.db
 
 # Logs
 *.log
+
+deployment_logs.txt

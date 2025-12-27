@@ -8,6 +8,11 @@ from pydantic import ValidationError
 from app.core.logging import logger
 
 
+class ExternalAPIError(Exception):
+    """Exception raised when external API calls fail."""
+    pass
+
+
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors."""
     logger.error(f"Validation error: {exc.errors()}")
@@ -20,11 +25,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=ErrorResponse(
-            error="ValidationError",
-            message="Invalid request data",
-            detail="; ".join(error_messages)
-        ).model_dump()
+        content={
+            "error": "ValidationError",
+            "message": "Invalid request data",
+            "detail": "; ".join(error_messages)
+        }
     )
 
 
@@ -34,11 +39,11 @@ async def general_exception_handler(request: Request, exc: Exception):
     
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content=ErrorResponse(
-            error="InternalServerError",
-            message="An unexpected error occurred",
-            detail=str(exc) if logger.level <= 10 else None  # Show details only in DEBUG mode
-        ).model_dump()
+        content={
+            "error": "InternalServerError",
+            "message": "An unexpected error occurred",
+            "detail": str(exc) if logger.level <= 10 else None
+        }
     )
 
 
