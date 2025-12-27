@@ -31,15 +31,7 @@ class ExternalAPIClient:
         self.timeout = timeout
     
     async def fetch_economy_data(self, asset: str) -> Optional[Dict[str, Any]]:
-        """
-        Fetch cryptocurrency price from CoinGecko API.
-        
-        Args:
-            asset: Asset code (e.g., 'btc', 'eth', 'sol')
-            
-        Returns:
-            Dictionary with price data or None if request fails
-        """
+
         # Map frontend asset code to CoinGecko ID
         coin_id = ASSET_MAPPING.get(asset.lower())
         if not coin_id:
@@ -71,15 +63,7 @@ class ExternalAPIClient:
             return None
     
     async def fetch_weather_data(self, country: str) -> Optional[Dict[str, Any]]:
-        """
-        Fetch current weather data from Open-Meteo API.
-        
-        Args:
-            country: Country name (e.g., 'algeria', 'france')
-            
-        Returns:
-            Dictionary with weather data or None if request fails
-        """
+
         # Map country name to coordinates
         coords = COUNTRY_COORDINATES.get(country.lower())
         if not coords:
@@ -114,15 +98,7 @@ class ExternalAPIClient:
             return None
     
     async def fetch_air_quality_data(self, country: str) -> Optional[Dict[str, Any]]:
-        """
-        Fetch air quality data from Open-Meteo Air Quality API.
-        
-        Args:
-            country: Country name (e.g., 'algeria', 'france')
-            
-        Returns:
-            Dictionary with air quality data or None if request fails
-        """
+
         # Map country name to coordinates (reuse same mapping as weather)
         coords = COUNTRY_COORDINATES.get(country.lower())
         if not coords:
@@ -155,26 +131,7 @@ class ExternalAPIClient:
             return None
     
     async def aggregate_data(self, request_data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
-        """
-        Aggregate data from multiple external APIs in parallel.
-        This is the core of the API gateway aggregation pattern.
-        
-        Args:
-            request_data: Dictionary specifying what data to fetch
-                Example: {
-                    "economy": {"asset": "btc"},
-                    "weather": {"country": "algeria"},
-                    "air": {"country": "algeria"}
-                }
-        
-        Returns:
-            Aggregated response with raw values only
-            Example: {
-                "economy": {"btc_usd": 68421},
-                "weather": {"temperature": 22, "wind_speed": 15.2},
-                "air": {"pm10": 45}
-            }
-        """
+
         # Build list of async tasks for parallel execution
         tasks = []
         task_keys = []

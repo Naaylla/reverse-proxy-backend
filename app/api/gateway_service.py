@@ -1,16 +1,3 @@
-"""
-API Gateway Service - Single entry point for aggregated external data.
-
-This service implements a reverse-proxy-backed API gateway pattern:
-- NGINX acts as the public reverse proxy (single entry point)
-- This gateway service aggregates data from multiple external APIs
-- Frontend never calls external APIs directly
-- All routing and API selection happens in the backend
-- Returns only raw values with no business logic
-
-Architecture:
-    Frontend -> NGINX (reverse proxy) -> Gateway Service -> External APIs
-"""
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -43,41 +30,13 @@ api_client = ExternalAPIClient(timeout=10.0)
 
 @app.get("/health")
 async def health_check():
-    """
-    Health check endpoint for monitoring.
-    NGINX can use this to verify the gateway service is running.
-    """
+    
     return {"status": "healthy", "service": "gateway"}
 
 
 @app.post("/state", response_model=StateResponse)
 async def get_state(request: StateRequest):
-    """
-    Main aggregation endpoint - returns raw data from multiple external APIs.
-    
-    This endpoint demonstrates the API gateway aggregation pattern:
-    1. Frontend sends a single request specifying what data it needs
-    2. Gateway service routes to appropriate external APIs in parallel
-    3. External API responses are aggregated and normalized
-    4. Only raw values are returned (no status, thresholds, or game logic)
-    
-    Request Body Example:
-        {
-            "economy": {"asset": "btc"},
-            "weather": {"country": "algeria"},
-            "air": {"country": "algeria"}
-        }
-    
-    Response Example:
-        {
-            "economy": {"btc_usd": 68421},
-            "weather": {"temperature": 22, "wind_speed": 15.2},
-            "air": {"pm10": 45}
-        }
-    
-    Note: NGINX routes /api/state to this endpoint. Frontend calls /api/state,
-          NGINX proxies it here, keeping external API details hidden.
-    """
+
     try:
         # Convert Pydantic model to dict for processing
         request_dict = {}

@@ -22,35 +22,14 @@ class AirQualityRequest(BaseModel):
 
 
 class StateRequest(BaseModel):
-    """
-    Request model for /api/state endpoint.
-    Frontend specifies which data categories it wants to fetch.
-    
-    Example:
-        {
-            "economy": {"asset": "btc"},
-            "weather": {"country": "algeria"},
-            "air": {"country": "algeria"}
-        }
-    """
+
     economy: Optional[EconomyRequest] = Field(None, description="Economy data request")
     weather: Optional[WeatherRequest] = Field(None, description="Weather data request")
     air: Optional[AirQualityRequest] = Field(None, description="Air quality data request")
 
 
 class StateResponse(BaseModel):
-    """
-    Response model for /api/state endpoint.
-    Contains only raw aggregated values from external APIs.
-    No status, no thresholds, no game logic.
-    
-    Example:
-        {
-            "economy": {"btc_usd": 68421},
-            "weather": {"temperature": 22, "wind_speed": 15.2},
-            "air": {"pm10": 45}
-        }
-    """
+
     economy: Optional[Dict[str, Any]] = Field(None, description="Economy data with raw values")
     weather: Optional[Dict[str, Any]] = Field(None, description="Weather data with raw values")
     air: Optional[Dict[str, Any]] = Field(None, description="Air quality data with raw values")
