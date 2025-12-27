@@ -5,7 +5,7 @@ services:
     runtime: docker
     plan: free
     env: docker
-    healthCheckPath: /api/health
+    healthCheckPath: /health
     envVars:
       - key: APP_NAME
         value: API Gateway

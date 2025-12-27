@@ -30,13 +30,13 @@ api_client = ExternalAPIClient(timeout=10.0)
 
 @app.get("/health")
 async def health_check():
-    
+    """Health check endpoint for Render monitoring."""
     return {"status": "healthy", "service": "gateway"}
 
 
 @app.post("/state", response_model=StateResponse)
 async def get_state(request: StateRequest):
-
+    """Main endpoint - aggregates external API data."""
     try:
         # Convert Pydantic model to dict for processing
         request_dict = {}
