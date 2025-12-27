@@ -1,7 +1,7 @@
-# Setup Script for Restructured Codebase
-# Run this after restructuring to set everything up
+# Setup Script for API Gateway
+# Run this to set up the development environment
 
-Write-Host "🚀 Setting up Assembly Factory Backend..." -ForegroundColor Green
+Write-Host "🚀 Setting up API Gateway..." -ForegroundColor Green
 Write-Host ""
 
 # Check Python version
@@ -64,12 +64,14 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "1. Update .env with your frontend URL" -ForegroundColor White
-Write-Host "2. Run a service: make run-design" -ForegroundColor White
-Write-Host "3. Or start all with Docker: make docker-up" -ForegroundColor White
+Write-Host "2. Run gateway: make run-gateway" -ForegroundColor White
+Write-Host "3. Or start with Docker: make docker-up" -ForegroundColor White
+Write-Host "4. Test the API: .\test_gateway.ps1" -ForegroundColor White
 Write-Host ""
 Write-Host "Documentation:" -ForegroundColor Yellow
-Write-Host "- README.md - Full documentation" -ForegroundColor White
-Write-Host "- MIGRATION.md - Migration guide" -ForegroundColor White
+Write-Host "- README.md - Main documentation" -ForegroundColor White
+Write-Host "- GATEWAY_README.md - Architecture guide" -ForegroundColor White
 Write-Host "- QUICK_REFERENCE.md - Quick commands" -ForegroundColor White
+Write-Host "- STARTUP_CHECKLIST.md - Troubleshooting" -ForegroundColor White
 Write-Host ""
 Write-Host "Happy coding! 🎉" -ForegroundColor Green

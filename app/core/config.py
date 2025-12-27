@@ -1,6 +1,6 @@
 """
 Application configuration management.
-Centralizes all configuration and environment variables.
+Centralizes all configuration and environment variables for the API Gateway.
 """
 from typing import List
 from pydantic_settings import BaseSettings
@@ -11,23 +11,23 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Application
-    APP_NAME: str = "Assembly Factory API"
+    APP_NAME: str = "API Gateway"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     
-    # CORS
-    ALLOWED_ORIGINS: str = "https://assembly-factory.vercel.app"
+    # CORS - Permissive for now, tighten in production
+    ALLOWED_ORIGINS: str = "*"
     
     @property
     def allowed_origins_list(self) -> List[str]:
         """Parse ALLOWED_ORIGINS string into a list."""
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
     
-    # Service Ports (for supervisor/docker)
-    DESIGN_PORT: int = 8001
-    ASSEMBLY_PORT: int = 8002
-    QUALITY_PORT: int = 8003
-    PACKAGING_PORT: int = 8004
+    # Gateway Service Port
+    GATEWAY_PORT: int = 8000
+    
+    # External API Timeout (seconds)
+    API_TIMEOUT: int = 10
     
     # Logging
     LOG_LEVEL: str = "INFO"
