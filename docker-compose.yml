@@ -1,9 +1,6 @@
-# Docker Compose configuration for API Gateway architecture
-# NGINX serves as reverse proxy, gateway aggregates external APIs
+version: "3.9"
 
 services:
-  # NGINX - Single public entry point (reverse proxy)
-  # Routes all /api/state requests to the gateway service
   nginx:
     image: nginx:latest
     ports:
@@ -11,15 +8,35 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - gateway
+      - gateway1
+      - gateway2
     restart: always
 
-  # Gateway Service - Aggregates external API data
-  # This is the only service that calls external APIs
-  # Frontend never calls external APIs directly
-  gateway:
+  gateway1:
     build: .
-    command: uvicorn app.api.gateway_service:app --host 0.0.0.0 --port 8000
+    command:
+      - uvicorn
+      - app.api.gateway_service:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    expose:
+      - "8000"
+    restart: always
+    environment:
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+
+  gateway2:
+    build: .
+    command:
+      - uvicorn
+      - app.api.gateway_service:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
     expose:
       - "8000"
     restart: always
