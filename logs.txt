@@ -1,0 +1,103 @@
+powersheell(vps):
+chrome@gitingore:~/reverse-proxy-backend$ git pull origin main
+remote: Enumerating objects: 30, done.
+remote: Counting objects: 100% (30/30), done.
+remote: Compressing objects: 100% (12/12), done.
+remote: Total 21 (delta 10), reused 18 (delta 8), pack-reused 0 (from 0)
+Unpacking objects: 100% (21/21), 10.29 KiB | 1.71 MiB/s, done.
+From https://github.com/Naaylla/reverse-proxy-backend
+ * branch            main       -> FETCH_HEAD
+   6ae0a97..799bedb  main       -> origin/main
+Updating 6ae0a97..799bedb
+Fast-forward
+ ARCHITECTURE_COMPARISON.md | 113 -----------------
+ GAME_LOGIC_DESIGN.md       | 560 -------------------------------------------------------------------------------------
+ README.md                  | Bin 36338 -> 14612 bytes
+ VPS_DEPLOYMENT.md          | 271 -----------------------------------------
+ app/api/gateway_service.py | 170 ++++++++++++++++++++++++--
+ app/services/gateway.py    |  45 ++++++-
+ render.yaml                |  18 ---
+ 7 files changed, 202 insertions(+), 975 deletions(-)
+ delete mode 100644 ARCHITECTURE_COMPARISON.md
+ delete mode 100644 GAME_LOGIC_DESIGN.md
+ delete mode 100644 VPS_DEPLOYMENT.md
+ delete mode 100644 render.yaml
+chrome@gitingore:~/reverse-proxy-backend$ docker compose down
+[+] down 3/3
+ ✔ Container reverse-proxy-backend-nginx-1   Removed                                                               0.2s
+ ✔ Container reverse-proxy-backend-gateway-1 Removed                                                               0.4s
+ ✔ Network reverse-proxy-backend_default     Removed                                                               0.1s
+chrome@gitingore:~/reverse-proxy-backend$ docker compose up -d --build
+[+] Building 19.0s (16/16) FINISHED
+ => [internal] load local bake definitions                                                                         0.0s
+ => => reading from stdin 552B                                                                                     0.0s
+ => [internal] load build definition from Dockerfile                                                               0.0s
+ => => transferring dockerfile: 818B                                                                               0.0s
+ => [internal] load metadata for docker.io/library/python:3.11-slim                                                0.8s
+ => [internal] load .dockerignore                                                                                  0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [1/9] FROM docker.io/library/python:3.11-slim@sha256:158caf0e080e2cd74ef2879ed3c4e697792ee65251c8208b7afb5668  0.0s
+ => => resolve docker.io/library/python:3.11-slim@sha256:158caf0e080e2cd74ef2879ed3c4e697792ee65251c8208b7afb5668  0.0s
+ => [internal] load build context                                                                                  0.0s
+ => => transferring context: 17.93kB                                                                               0.0s
+ => CACHED [2/9] WORKDIR /app                                                                                      0.0s
+ => CACHED [3/9] RUN apt-get update && apt-get install -y     nginx     supervisor     && rm -rf /var/lib/apt/lis  0.0s
+ => [4/9] COPY app/ ./app/                                                                                         0.0s
+ => [5/9] COPY requirements.txt .                                                                                  0.1s
+ => [6/9] COPY nginx.conf /etc/nginx/sites-available/default                                                       0.1s
+ => [7/9] RUN rm -f /etc/nginx/sites-enabled/default &&     ln -s /etc/nginx/sites-available/default /etc/nginx/s  0.2s
+ => [8/9] COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf                                            0.1s
+ => [9/9] RUN pip install --no-cache-dir -r requirements.txt                                                      11.7s
+ => exporting to image                                                                                             5.7s
+ => => exporting layers                                                                                            4.6s
+ => => exporting manifest sha256:57a5be102ddec32e5d4f989fe69e3917f642d287b51bf9e901352187d43b6c94                  0.0s
+ => => exporting config sha256:2e7fe61f9644a7a82f7194971e32d0f3a3d96396c573b248b6e104e908554286                    0.0s
+ => => exporting attestation manifest sha256:c160890d5875b4fde463752c7f000fd1e4330d0275cd5219ebcbd29434e57648      0.0s
+ => => exporting manifest list sha256:ba5c8fbdf369308552cbe079c6a81bfdfabfa10261d5ca8061b3a117615dc8bc             0.0s
+ => => naming to docker.io/library/reverse-proxy-backend-gateway:latest                                            0.0s
+ => => unpacking to docker.io/library/reverse-proxy-backend-gateway:latest                                         1.0s
+ => resolving provenance for metadata file                                                                         0.0s
+[+] up 4/4
+ ✔ Image reverse-proxy-backend-gateway       Built                                                                19.1s
+ ✔ Network reverse-proxy-backend_default     Created                                                               0.0s
+ ✔ Container reverse-proxy-backend-gateway-1 Created                                                               1.2s
+ ✔ Container reverse-proxy-backend-nginx-1   Created                                                               0.1s
+chrome@gitingore:~/reverse-proxy-backend$ sleep 30
+chrome@gitingore:~/reverse-proxy-backend$ curl http://localhost/api/health
+{"status":"healthy","service":"gateway"}chrome@gitingore:~/reverse-proxy-backend$ curl -X POST http://localhost/api/state \                                       curl -X POST http://localhost/api/state \
+  -H "Content-Type: application/json" \
+  -d '{"economy":{"asset":"btc"},"weather":{"country":"algeria"}}'
+{"economy":{"btc_usd":87761},"weather":{"temperature":15.6,"wind_speed":2.6},"_meta":{"response_time_ms":139.09,"api_calls":2,"cached":false,"timestamp":"2025-12-28T17:46:12.854204"}}chrome@gitingore:~/reverse-proxy-backend$
+chrome@gitingore:~/reverse-proxy-backend$ curl http://localhost/metrics
+API Gateway - Reverse Proxy Activechrome@gitingore:~/reverse-proxy-backend$ curl http://localhost/metrics
+API Gateway - Reverse Proxy Activechrome@gitingore:~/reverse-proxy-backend$ curl http://localhost/health/external
+API Gateway - Reverse Proxy Activechrome@gitingore:~/reverse-proxy-backend$ docker compose logs gateway --tail=20
+gateway-1  | INFO:     Started server process [1]
+gateway-1  | INFO:     Waiting for application startup.
+gateway-1  | INFO:     Application startup complete.
+gateway-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+gateway-1  | INFO:     172.18.0.3:52358 - "GET /health HTTP/1.0" 200 OK
+gateway-1  | INFO:     172.18.0.3:57416 - "POST /state HTTP/1.0" 200 OK
+chrome@gitingore:~/reverse-proxy-backend$
+
+cmd:
+C:\Users\TRETEC>curl http://72.146.216.162/api/health
+{"status":"healthy","service":"gateway"}
+C:\Users\TRETEC>curl http://72.146.216.162/metrics
+API Gateway - Reverse Proxy Active
+C:\Users\TRETEC>curl -X POST http://72.146.216.162/api/state `
+{"detail":[{"type":"missing","loc":["body"],"msg":"Field required","input":null}]}curl: (3) URL rejected: Bad hostname
+
+C:\Users\TRETEC>  -H "Content-Type: application/json" `
+'-H' n’est pas reconnu en tant que commande interne
+ou externe, un programme exécutable ou un fichier de commandes.
+
+C:\Users\TRETEC>curl -X POST http://72.146.216.162/api/state -H "Content-Type: application/json" -Body '{"economy":{"asset":"btc"}}'
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    82  100    82    0     0    493      0 --:--:-- --:--:-- --:--:--   493
+curl: (3) nested brace in URL position 11:
+'{economy:{asset:btc}}'
+          ^
+
+C:\Users\TRETEC>
