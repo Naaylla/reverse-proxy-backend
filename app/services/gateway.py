@@ -4,6 +4,7 @@ This module handles all external API calls and data normalization.
 """
 import asyncio
 from typing import Dict, Any, Optional
+from datetime import datetime, timedelta
 import httpx
 from app.core.mappings import (
     ASSET_MAPPING,
@@ -18,17 +19,21 @@ from app.core.exceptions import ExternalAPIError
 class ExternalAPIClient:
     """
     Client for making parallel requests to external APIs.
-    Implements the aggregation layer of the API gateway pattern.
+    Implements the aggregation layer of the API gateway pattern with caching.
     """
     
-    def __init__(self, timeout: float = 10.0):
+    def __init__(self, timeout: float = 10.0, cache_duration: int = 30):
         """
         Initialize the external API client.
         
         Args:
             timeout: Maximum time to wait for external API responses (seconds)
+            cache_duration: How long to cache responses (seconds)
         """
         self.timeout = timeout
+        self.cache_duration = cache_duration
+        self._cache = {}
+        self._last_was_cached = False
     
     async def fetch_economy_data(self, asset: str) -> Optional[Dict[str, Any]]:
 
@@ -130,8 +135,33 @@ class ExternalAPIClient:
             print(f"Air quality API error for {country}: {str(e)}")
             return None
     
+    
+    def _get_cache_key(self, prefix: str, identifier: str) -> str:
+        """Generate cache key."""
+        return f"{prefix}:{identifier}"
+    
+    def _is_cache_valid(self, timestamp: datetime) -> bool:
+        """Check if cached data is still valid."""
+        return datetime.now() - timestamp < timedelta(seconds=self.cache_duration)
+    
+    async def _get_cached_or_fetch(self, cache_key: str, fetch_func):
+        """Get from cache or fetch fresh data."""
+        # Check cache first
+        if cache_key in self._cache:
+            data, timestamp = self._cache[cache_key]
+            if self._is_cache_valid(timestamp):
+                self._last_was_cached = True
+                return data
+        
+        # Cache miss or expired - fetch fresh data
+        self._last_was_cached = False
+        data = await fetch_func()
+        if data is not None:
+            self._cache[cache_key] = (data, datetime.now())
+        return data
+    
     async def aggregate_data(self, request_data: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
-
+        """Aggregate data from external APIs with caching support."""
         # Build list of async tasks for parallel execution
         tasks = []
         task_keys = []
@@ -139,19 +169,22 @@ class ExternalAPIClient:
         # Check if economy data is requested
         if "economy" in request_data and "asset" in request_data["economy"]:
             asset = request_data["economy"]["asset"]
-            tasks.append(self.fetch_economy_data(asset))
+            cache_key = self._get_cache_key("economy", asset)
+            tasks.append(self._get_cached_or_fetch(cache_key, lambda a=asset: self.fetch_economy_data(a)))
             task_keys.append("economy")
         
         # Check if weather data is requested
         if "weather" in request_data and "country" in request_data["weather"]:
             country = request_data["weather"]["country"]
-            tasks.append(self.fetch_weather_data(country))
+            cache_key = self._get_cache_key("weather", country)
+            tasks.append(self._get_cached_or_fetch(cache_key, lambda c=country: self.fetch_weather_data(c)))
             task_keys.append("weather")
         
         # Check if air quality data is requested
         if "air" in request_data and "country" in request_data["air"]:
             country = request_data["air"]["country"]
-            tasks.append(self.fetch_air_quality_data(country))
+            cache_key = self._get_cache_key("air", country)
+            tasks.append(self._get_cached_or_fetch(cache_key, lambda c=country: self.fetch_air_quality_data(c)))
             task_keys.append("air")
         
         # Execute all API calls in parallel for optimal performance
